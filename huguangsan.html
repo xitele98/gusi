@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>为杉杉小朋友设计的可交互时钟</title>
+    <title>教学用可交互时钟</title>
     <style>
         * {
             margin: 0;
@@ -142,6 +142,7 @@
             transform: translateX(-50%);
             transition: transform 0.1s linear;
             z-index: 5;
+            touch-action: none;
         }
 
         .hour-hand {
@@ -162,7 +163,6 @@
             background-color: #e74c3c;
         }
 
-        /* —————— 稳定不乱的刻度 —————— */
         .clock-scale {
             position: absolute;
             top: 0;
@@ -200,7 +200,7 @@
     </style>
 </head>
 <body>
-    <div class="title">📚为杉杉小朋友设计的可交互时钟</div>
+    <div class="title">📚 教学用可交互时钟</div>
     <div class="time-display" id="timeText">12:00:00</div>
 
     <div class="button-group">
@@ -269,12 +269,10 @@
         let isDragging = false;
         let activeHand = null;
 
-        // ✅ 超级稳定刻度生成
         function initScale() {
             const scale = document.createElement('div');
             scale.className = 'clock-scale';
             clock.prepend(scale);
-
             const r = clock.offsetWidth / 2;
             for(let i=0;i<60;i++){
                 const line = document.createElement('div');
@@ -295,20 +293,18 @@
             const secondDeg = seconds * 6;
             const minuteDeg = minutes * 6 + seconds * 0.1;
             const hourDeg = (hours % 12) * 30 + minutes * 0.5 + seconds * (1/120);
-
             secondHand.style.transform = `translateX(-50%) rotate(${secondDeg}deg)`;
             minuteHand.style.transform = `translateX(-50%) rotate(${minuteDeg}deg)`;
             hourHand.style.transform = `translateX(-50%) rotate(${hourDeg}deg)`;
-
             timeText.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         }
 
-        function getMouseAngle(e) {
+        function getAngle(clientX, clientY) {
             const rect = clock.getBoundingClientRect();
             const cx = rect.left + rect.width / 2;
             const cy = rect.top + rect.height / 2;
-            const dx = e.clientX - cx;
-            const dy = e.clientY - cy;
+            const dx = clientX - cx;
+            const dy = clientY - cy;
             let angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
             if (angle < 0) angle += 360;
             return angle;
@@ -341,20 +337,40 @@
         }
 
         function initDrag() {
-            [hourHand, minuteHand, secondHand].forEach(h => {
+            const hands = [hourHand, minuteHand, secondHand];
+            
+            hands.forEach(h => {
+                // 电脑鼠标
                 h.addEventListener('mousedown', e => {
                     e.preventDefault();
                     isDragging = true;
                     activeHand = h;
                 });
+                // 手机触摸
+                h.addEventListener('touchstart', e => {
+                    e.preventDefault();
+                    isDragging = true;
+                    activeHand = h;
+                });
             });
-            document.addEventListener('mouseup', () => {
-                isDragging = false;
-                activeHand = null;
-            });
+
+            // 结束拖动
+            document.addEventListener('mouseup', () => { isDragging = false; activeHand = null });
+            document.addEventListener('touchend', () => { isDragging = false; activeHand = null });
+
+            // 移动事件
             document.addEventListener('mousemove', e => {
                 if (!isDragging || !activeHand) return;
-                const a = getMouseAngle(e);
+                const a = getAngle(e.clientX, e.clientY);
+                if (activeHand === hourHand) setTimeByHour(a);
+                if (activeHand === minuteHand) setTimeByMinute(a);
+                if (activeHand === secondHand) setTimeBySecond(a);
+            });
+
+            document.addEventListener('touchmove', e => {
+                if (!isDragging || !activeHand) return;
+                const touch = e.touches[0];
+                const a = getAngle(touch.clientX, touch.clientY);
                 if (activeHand === hourHand) setTimeByHour(a);
                 if (activeHand === minuteHand) setTimeByMinute(a);
                 if (activeHand === secondHand) setTimeBySecond(a);

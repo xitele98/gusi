@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>为杉杉小朋友做的可交互时钟</title>
+    <title>为小朋友设计的可交互时钟</title>
     <style>
         * {
             margin: 0;
@@ -140,9 +140,7 @@
             border-radius: 10px;
             cursor: grab;
             transform: translateX(-50%);
-            transition: transform 0.1s linear;
             z-index: 5;
-            touch-action: none;
         }
 
         .hour-hand {
@@ -196,11 +194,10 @@
             font-weight: bold;
             color: #e74c3d;
         }
-
     </style>
 </head>
 <body>
-    <div class="title">📚为杉杉小朋友做的可交互时钟</div>
+    <div class="title">📚为小朋友设计的可交互时钟</div>
     <div class="time-display" id="timeText">12:00:00</div>
 
     <div class="button-group">
@@ -265,7 +262,7 @@
         const inputM = document.getElementById('inputM');
         const inputS = document.getElementById('inputS');
 
-        let hours = 12, minutes = 0, seconds = 0;
+        let h = 12, m = 0, s = 0;
         let isDragging = false;
         let activeHand = null;
 
@@ -274,106 +271,103 @@
             scale.className = 'clock-scale';
             clock.prepend(scale);
             const r = clock.offsetWidth / 2;
-            for(let i=0;i<60;i++){
+            for (let i = 0; i < 60; i++) {
                 const line = document.createElement('div');
                 line.style.position = 'absolute';
-                line.style.width = i%5===0 ? '6px' : '2px';
-                line.style.height = i%5===0 ? '20px' : '10px';
-                line.style.backgroundColor = i%5===0 ? '#2c3e50' : '#95a5a6';
+                line.style.width = i % 5 === 0 ? '6px' : '2px';
+                line.style.height = i % 5 === 0 ? '20px' : '10px';
+                line.style.backgroundColor = i % 5 === 0 ? '#2c3e50' : '#95a5a6';
                 line.style.borderRadius = '2px';
                 line.style.left = '50%';
                 line.style.top = '5px';
-                line.style.transformOrigin = `50% ${r-5}px`;
-                line.style.transform = `rotate(${i*6}deg) translateX(-50%)`;
+                line.style.transformOrigin = `50% ${r - 5}px`;
+                line.style.transform = `rotate(${i * 6}deg) translateX(-50%)`;
                 scale.appendChild(line);
             }
         }
 
         function updateClock() {
-            const secondDeg = seconds * 6;
-            const minuteDeg = minutes * 6 + seconds * 0.1;
-            const hourDeg = (hours % 12) * 30 + minutes * 0.5 + seconds * (1/120);
-            secondHand.style.transform = `translateX(-50%) rotate(${secondDeg}deg)`;
-            minuteHand.style.transform = `translateX(-50%) rotate(${minuteDeg}deg)`;
+            const secDeg = s * 6;
+            const minDeg = m * 6 + s * 0.1;
+            const hourDeg = (h % 12) * 30 + m * 0.5 + s / 120;
+
+            secondHand.style.transform = `translateX(-50%) rotate(${secDeg}deg)`;
+            minuteHand.style.transform = `translateX(-50%) rotate(${minDeg}deg)`;
             hourHand.style.transform = `translateX(-50%) rotate(${hourDeg}deg)`;
-            timeText.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+            timeText.textContent = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
         }
 
-        function getAngle(clientX, clientY) {
+        function getMouseAngle(e) {
             const rect = clock.getBoundingClientRect();
             const cx = rect.left + rect.width / 2;
             const cy = rect.top + rect.height / 2;
-            const dx = clientX - cx;
-            const dy = clientY - cy;
+            const dx = e.clientX - cx;
+            const dy = e.clientY - cy;
             let angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
             if (angle < 0) angle += 360;
-            return angle;
+            return angle % 360;
         }
 
-        function setTimeByHour(angle) {
-            hours = Math.floor(angle / 30) % 24;
-            const r = angle % 30;
-            minutes = Math.floor(r * 2);
-            seconds = Math.floor((r * 2 - minutes) * 60);
-            normalizeTime(); updateClock(); syncInput();
-        }
-        function setTimeByMinute(angle) {
-            minutes = Math.floor(angle / 6) % 60;
-            seconds = Math.floor((angle % 6) * 10);
-            hours = (hours + Math.floor(minutes / 60)) % 24;
-            normalizeTime(); updateClock(); syncInput();
-        }
-        function setTimeBySecond(angle) {
-            seconds = Math.floor(angle / 6) % 60;
-            minutes = (minutes + Math.floor(seconds / 60)) % 60;
-            hours = (hours + Math.floor(minutes / 60)) % 24;
-            normalizeTime(); updateClock(); syncInput();
-        }
-
-        function normalizeTime() {
-            hours = hours % 24;
-            minutes = minutes % 60;
-            seconds = seconds % 60;
+        // ✅【核心修复】修复正向/反向转动指针的进位/退位逻辑
+        function setByDrag(hand, angle) {
+            if (hand === 'hour') {
+                let nh = Math.floor(angle / 30);
+                nh = nh === 0 ? 12 : nh;
+                let nm = Math.floor((angle % 30) * 2);
+                let ns = Math.floor(((angle % 30) * 2 - nm) * 60);
+                h = nh; m = nm; s = ns;
+            }
+            if (hand === 'minute') {
+                let newM = Math.floor(angle / 6);
+                let diff = newM - m;
+                if (diff < -50) { // 正向跨12点（如59→0）：小时+1
+                    h += 1;
+                } else if (diff > 50) { // 反向跨12点（如0→59）：小时-1
+                    h -= 1;
+                }
+                m = newM % 60;
+                s = Math.floor((angle % 6) * 10);
+                // 处理小时边界（0-23）
+                if (h >= 24) h = 0;
+                if (h < 0) h = 23;
+            }
+            if (hand === 'second') {
+                let newS = Math.floor(angle / 6);
+                let diff = newS - s;
+                if (diff < -50) { // 正向跨12点（59→0）：分钟+1
+                    m += 1;
+                } else if (diff > 50) { // 反向跨12点（0→59）：分钟-1
+                    m -= 1;
+                }
+                s = newS % 60;
+                // 处理分钟和小时边界
+                if (m >= 60) {
+                    m = 0;
+                    h += 1;
+                } else if (m < 0) {
+                    m = 59;
+                    h -= 1;
+                }
+                if (h >= 24) h = 0;
+                if (h < 0) h = 23;
+            }
+            updateClock();
+            syncInput();
         }
 
         function initDrag() {
-            const hands = [hourHand, minuteHand, secondHand];
-            
-            hands.forEach(h => {
-                // 电脑鼠标
-                h.addEventListener('mousedown', e => {
+            [hourHand, minuteHand, secondHand].forEach(el => {
+                el.addEventListener('mousedown', e => {
                     e.preventDefault();
                     isDragging = true;
-                    activeHand = h;
-                });
-                // 手机触摸
-                h.addEventListener('touchstart', e => {
-                    e.preventDefault();
-                    isDragging = true;
-                    activeHand = h;
+                    activeHand = el === hourHand ? 'hour' : el === minuteHand ? 'minute' : 'second';
                 });
             });
-
-            // 结束拖动
             document.addEventListener('mouseup', () => { isDragging = false; activeHand = null });
-            document.addEventListener('touchend', () => { isDragging = false; activeHand = null });
-
-            // 移动事件
             document.addEventListener('mousemove', e => {
                 if (!isDragging || !activeHand) return;
-                const a = getAngle(e.clientX, e.clientY);
-                if (activeHand === hourHand) setTimeByHour(a);
-                if (activeHand === minuteHand) setTimeByMinute(a);
-                if (activeHand === secondHand) setTimeBySecond(a);
-            });
-
-            document.addEventListener('touchmove', e => {
-                if (!isDragging || !activeHand) return;
-                const touch = e.touches[0];
-                const a = getAngle(touch.clientX, touch.clientY);
-                if (activeHand === hourHand) setTimeByHour(a);
-                if (activeHand === minuteHand) setTimeByMinute(a);
-                if (activeHand === secondHand) setTimeBySecond(a);
+                setByDrag(activeHand, getMouseAngle(e));
             });
         }
 
@@ -393,29 +387,30 @@
         }
 
         function resetClock() {
-            hours = 12; minutes = 0; seconds = 0;
-            updateClock(); syncInput();
+            h = 12; m = 0; s = 0;
+            updateClock();
+            syncInput();
         }
 
         function syncInput() {
-            inputH.value = hours;
-            inputM.value = minutes;
-            inputS.value = seconds;
+            inputH.value = h;
+            inputM.value = m;
+            inputS.value = s;
         }
 
         function initInput() {
-            function setByInput() {
-                let h = parseInt(inputH.value) || 0;
-                let m = parseInt(inputM.value) || 0;
-                let s = parseInt(inputS.value) || 0;
-                hours = Math.max(0, Math.min(23, h));
-                minutes = Math.max(0, Math.min(59, m));
-                seconds = Math.max(0, Math.min(59, s));
-                updateClock(); syncInput();
+            function set() {
+                let nh = parseInt(inputH.value) || 0;
+                let nm = parseInt(inputM.value) || 0;
+                let ns = parseInt(inputS.value) || 0;
+                h = Math.max(0, Math.min(23, nh));
+                m = Math.max(0, Math.min(59, nm));
+                s = Math.max(0, Math.min(59, ns));
+                updateClock();
             }
-            inputH.addEventListener('input', setByInput);
-            inputM.addEventListener('input', setByInput);
-            inputS.addEventListener('input', setByInput);
+            inputH.addEventListener('input', set);
+            inputM.addEventListener('input', set);
+            inputS.addEventListener('input', set);
         }
 
         window.onload = () => {

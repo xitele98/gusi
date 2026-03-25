@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>为小朋友设计的可交互时钟</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            background-color: #f5f7fa;
+            font-family: "Microsoft YaHei", sans-serif;
+            padding: 20px 10px;
+        }
+
+        .title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .time-display {
+            font-size: 26px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            justify-content: center;
+        }
+
+        .clock-btn {
+            padding: 8px 14px;
+            font-size: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .hour-btn { background-color: #2c3e50; color: white; }
+        .minute-btn { background-color: #3498db; color: white; }
+        .second-btn { background-color: #e74c3c; color: white; }
+        .reset-btn { background-color: #f39c12; color: white; }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .time-input {
+            width: 70px;
+            padding: 8px;
+            font-size: 16px;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        .time-input:focus { border-color: #3498db; }
+        .input-label { font-size: 16px; font-weight: bold; }
+
+        .clock {
+            width: 90vw;
+            max-width: 380px;
+            height: 90vw;
+            max-height: 380px;
+            background-color: white;
+            border-radius: 50%;
+            border: 8px solid #2c3e50;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.15);
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .clock-center {
+            width: 18px;
+            height: 18px;
+            background-color: #e74c3c;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+
+        .number {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            font-size: 26px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            line-height: 40px;
+        }
+
+        .num12 { top: 20px; left: 50%; transform: translateX(-50%); }
+        .num3  { top: 50%; right: 25px; transform: translateY(-50%); }
+        .num6  { bottom: 20px; left: 50%; transform: translateX(-50%); }
+        .num9  { top: 50%; left: 25px; transform: translateY(-50%); }
+        .num1  { top: 40px; right: 80px; }
+        .num2  { top: 95px; right: 35px; }
+        .num4  { bottom: 95px; right: 35px; }
+        .num5  { bottom: 40px; right: 80px; }
+        .num7  { bottom: 40px; left: 80px; }
+        .num8  { bottom: 95px; left: 35px; }
+        .num10 { top: 95px; left: 35px; }
+        .num11 { top: 40px; left: 80px; }
+
+        .hand {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform-origin: bottom center;
+            border-radius: 10px;
+            cursor: grab;
+            transform: translateX(-50%);
+            z-index: 5;
+        }
+
+        /* ✅ 你要的层级：秒针 > 分针 > 时针  （时 < 分 < 秒） */
+        .hour-hand {
+            width: 10px;
+            height: 100px;
+            background-color: #2c3e50;
+            z-index: 6; /* 最低 */
+        }
+        .minute-hand {
+            width: 6px;
+            height: 140px;
+            background-color: #3498db;
+            z-index: 7; /* 中间 */
+        }
+        .second-hand {
+            width: 3px;
+            height: 160px;
+            background-color: #e74c3c;
+            z-index: 8; /* 最高 */
+        }
+
+        .clock-scale {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .clock-info {
+            max-width: 380px;
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10 rgba(0,0,0,0.1);
+            line-height: 1.6;
+            font-size: 14px;
+            color: #333;
+        }
+        .info-title {
+            font-weight: bold;
+            font-size: 16px;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .info-item {
+            margin: 4px 0;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #e74c3d;
+        }
+    </style>
+</head>
+<body>
+    <div class="title">📚为小朋友设计的可交互时钟</div>
+    <div class="time-display" id="timeText">00:00:00</div>
+
+    <div class="button-group">
+        <button class="clock-btn hour-btn" id="toggleHour">隐藏时针</button>
+        <button class="clock-btn minute-btn" id="toggleMinute">隐藏分针</button>
+        <button class="clock-btn second-btn" id="toggleSecond">隐藏秒针</button>
+        <button class="clock-btn reset-btn" id="resetBtn">重置 0点</button>
+    </div>
+
+    <div class="input-group">
+        <span class="input-label">时间：</span>
+        <input type="number" class="time-input" id="inputH" placeholder="时" min="0" max="23">
+        <span class="input-label">:</span>
+        <input type="number" class="time-input" id="inputM" placeholder="分" min="0" max="59">
+        <span class="input-label">:</span>
+        <input type="number" class="time-input" id="inputS" placeholder="秒" min="0" max="59">
+    </div>
+
+    <div class="clock" id="clock">
+        <div class="number num12">12</div>
+        <div class="number num1">1</div>
+        <div class="number num2">2</div>
+        <div class="number num3">3</div>
+        <div class="number num4">4</div>
+        <div class="number num5">5</div>
+        <div class="number num6">6</div>
+        <div class="number num7">7</div>
+        <div class="number num8">8</div>
+        <div class="number num9">9</div>
+        <div class="number num10">10</div>
+        <div class="number num11">11</div>
+
+        <div class="hand hour-hand" id="hourHand"></div>
+        <div class="hand minute-hand" id="minuteHand"></div>
+        <div class="hand second-hand" id="secondHand"></div>
+        <div class="clock-center"></div>
+    </div>
+
+    <div class="clock-info">
+        <div class="info-title">📕 钟表小知识</div>
+        <div class="info-item">1. 钟表一共有 <span class="highlight">12 个大格</span>，<span class="highlight">60 个小格</span></div>
+        <div class="info-item">2. <span class="highlight">1 大格 = 5 小格</span></div>
+        <div class="info-item">3. 时针：走 1 大格 = <span class="highlight">1 小时</span></div>
+        <div class="info-item">4. 分针：走 1 小格 = <span class="highlight">1 分钟</span>，走 1 大格 = <span class="highlight">5 分钟</span></div>
+        <div class="info-item">5. 秒针：走 1 小格 = <span class="highlight">1 秒钟</span>，走 1 大格 = <span class="highlight">5 秒钟</span></div>
+        <div class="info-item">6. 1 时 = 60 分，1 分 = 60 秒</div>
+    </div>
+
+    <script>
+        const clock = document.getElementById('clock');
+        const hourHand = document.getElementById('hourHand');
+        const minuteHand = document.getElementById('minuteHand');
+        const secondHand = document.getElementById('secondHand');
+        const timeText = document.getElementById('timeText');
+
+        const toggleHour = document.getElementById('toggleHour');
+        const toggleMinute = document.getElementById('toggleMinute');
+        const toggleSecond = document.getElementById('toggleSecond');
+        const resetBtn = document.getElementById('resetBtn');
+
+        const inputH = document.getElementById('inputH');
+        const inputM = document.getElementById('inputM');
+        const inputS = document.getElementById('inputS');
+
+        let h = 0, m = 0, s = 0;
+        let isDragging = false;
+        let activeHand = null;
+        let lastAngle = 0;
+
+        function initScale() {
+            const scale = document.createElement('div');
+            scale.className = 'clock-scale';
+            clock.prepend(scale);
+            const r = clock.offsetWidth / 2;
+            for (let i = 0; i < 60; i++) {
+                const line = document.createElement('div');
+                line.style.position = 'absolute';
+                line.style.width = i % 5 === 0 ? '6px' : '2px';
+                line.style.height = i % 5 === 0 ? '20px' : '10px';
+                line.style.backgroundColor = i % 5 === 0 ? '#2c3e50' : '#95a5a6';
+                line.style.borderRadius = '2px';
+                line.style.left = '50%';
+                line.style.top = '10px';
+                line.style.transformOrigin = `50% ${r - 10}px`;
+                line.style.transform = `rotate(${i * 6}deg) translateX(-50%)`;
+                scale.appendChild(line);
+            }
+        }
+
+        function updateClock() {
+            h = (h + 24) % 24;
+            m = (m + 60) % 60;
+            s = (s + 60) % 60;
+
+            const secDeg = s * 6;
+            const minDeg = m * 6 + s * 0.1;
+            const hourDeg = (h % 12) * 30 + m * 0.5;
+
+            secondHand.style.transform = `translateX(-50%) rotate(${secDeg}deg)`;
+            minuteHand.style.transform = `translateX(-50%) rotate(${minDeg}deg)`;
+            hourHand.style.transform = `translateX(-50%) rotate(${hourDeg}deg)`;
+
+            timeText.textContent = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function getMouseAngle(e) {
+            const rect = clock.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const dx = clientX - cx;
+            const dy = clientY - cy;
+            let angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+            if (angle < 0) angle += 360;
+            return angle % 360;
+        }
+
+        // =======================
+        // ✅ 0点逆时针拖时针=23点（完美保留）
+        // =======================
+        function setByDrag(hand, angle) {
+            if (hand === 'hour') {
+                const delta = angle - lastAngle;
+                if (delta > 300) {
+                    if (h === 0) h = 23;
+                    else h--;
+                } else if (delta < -300) {
+                    h++;
+                }
+                let current = Math.floor(angle / 30);
+                h = h - (h % 12) + current;
+                h = (h + 24) % 24;
+                m = Math.floor((angle % 30) * 2);
+                s = Math.floor(((angle % 30) * 2 - m) * 60);
+            }
+
+            if (hand === 'minute') {
+                let newM = Math.floor(angle / 6);
+                let diff = newM - m;
+                if (diff < -50) h++;
+                if (diff > 50) h--;
+                m = newM % 60;
+                s = Math.floor((angle % 6) * 10);
+                h = (h + 24) % 24;
+            }
+
+            if (hand === 'second') {
+                let newS = Math.floor(angle / 6);
+                let diff = newS - s;
+                if (diff < -50) m++;
+                if (diff > 50) m--;
+                s = newS % 60;
+                if (m >= 60) { m=0; h++; }
+                if (m < 0) { m=59; h--; }
+                h = (h + 24) % 24;
+            }
+
+            lastAngle = angle;
+            updateClock();
+            syncInput();
+        }
+
+        // ✅ 层级拖动顺序：秒针 → 分针 → 时针
+        function initDrag() {
+            function startDrag(e, handType) {
+                e.preventDefault();
+                isDragging = true;
+                activeHand = handType;
+                lastAngle = getMouseAngle(e);
+            }
+
+            // 顺序必须是：秒 → 分 → 时 （优先级覆盖）
+            secondHand.addEventListener('mousedown', e => startDrag(e, 'second'));
+            minuteHand.addEventListener('mousedown', e => startDrag(e, 'minute'));
+            hourHand.addEventListener('mousedown', e => startDrag(e, 'hour'));
+
+            secondHand.addEventListener('touchstart', e => startDrag(e, 'second'));
+            minuteHand.addEventListener('touchstart', e => startDrag(e, 'minute'));
+            hourHand.addEventListener('touchstart', e => startDrag(e, 'hour'));
+
+            document.addEventListener('mouseup', () => { isDragging = false; activeHand = null });
+            document.addEventListener('touchend', () => { isDragging = false; activeHand = null });
+            document.addEventListener('touchcancel', () => { isDragging = false; activeHand = null });
+            
+            document.addEventListener('mousemove', e => {
+                if (!isDragging || !activeHand) return;
+                setByDrag(activeHand, getMouseAngle(e));
+            });
+            document.addEventListener('touchmove', e => {
+                if (!isDragging || !activeHand) return;
+                setByDrag(activeHand, getMouseAngle(e));
+            });
+        }
+
+        function initToggle() {
+            toggleHour.onclick = () => {
+                hourHand.style.display = hourHand.style.display === 'none' ? 'block' : 'none';
+                toggleHour.textContent = hourHand.style.display === 'none' ? '显示时针' : '隐藏时针';
+            };
+            toggleMinute.onclick = () => {
+                minuteHand.style.display = minuteHand.style.display === 'none' ? 'block' : 'none';
+                toggleMinute.textContent = minuteHand.style.display === 'none' ? '显示分针' : '隐藏分针';
+            };
+            toggleSecond.onclick = () => {
+                secondHand.style.display = secondHand.style.display === 'none' ? 'block' : 'none';
+                toggleSecond.textContent = secondHand.style.display === 'none' ? '显示秒针' : '隐藏秒针';
+            };
+        }
+
+        function resetClock() {
+            h = 0; m = 0; s = 0;
+            updateClock();
+            syncInput();
+        }
+
+        function syncInput() {
+            inputH.value = h;
+            inputM.value = m;
+            inputS.value = s;
+        }
+
+        function initInput() {
+            function set() {
+                let nh = parseInt(inputH.value) || 0;
+                let nm = parseInt(inputM.value) || 0;
+                let ns = parseInt(inputS.value) || 0;
+                h = Math.max(0, Math.min(23, nh));
+                m = Math.max(0, Math.min(59, nm));
+                s = Math.max(0, Math.min(59, ns));
+                updateClock();
+            }
+            inputH.addEventListener('input', set);
+            inputM.addEventListener('input', set);
+            inputS.addEventListener('input', set);
+        }
+
+        window.onload = () => {
+            initScale();
+            updateClock();
+            initDrag();
+            initToggle();
+            syncInput();
+            resetBtn.onclick = resetClock;
+            initInput();
+        };
+    </script>
+</body>
+</html>

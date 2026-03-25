@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>为小朋友设计的可交互时钟</title>
+    <title>为杉杉小朋友设计的可交互时钟</title>
     <style>
         * {
             margin: 0;
@@ -94,6 +94,7 @@
             position: relative;
             box-shadow: 0 0 20px rgba(0,0,0,0.15);
             margin-bottom: 25px;
+            overflow: hidden; /* 👈 修复刻度出圈：自动隐藏超出圆形的部分 */
         }
 
         .clock-center {
@@ -197,7 +198,7 @@
     </style>
 </head>
 <body>
-    <div class="title">📚为小朋友设计的可交互时钟</div>
+    <div class="title">📚为杉杉小朋友设计的可交互时钟</div>
     <div class="time-display" id="timeText">12:00:00</div>
 
     <div class="button-group">
@@ -279,8 +280,8 @@
                 line.style.backgroundColor = i % 5 === 0 ? '#2c3e50' : '#95a5a6';
                 line.style.borderRadius = '2px';
                 line.style.left = '50%';
-                line.style.top = '5px';
-                line.style.transformOrigin = `50% ${r - 5}px`;
+                line.style.top = '10px';
+                line.style.transformOrigin = `50% ${r - 10}px`;
                 line.style.transform = `rotate(${i * 6}deg) translateX(-50%)`;
                 scale.appendChild(line);
             }
@@ -302,8 +303,10 @@
             const rect = clock.getBoundingClientRect();
             const cx = rect.left + rect.width / 2;
             const cy = rect.top + rect.height / 2;
-            const dx = e.clientX - cx;
-            const dy = e.clientY - cy;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const dx = clientX - cx;
+            const dy = clientY - cy;
             let angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
             if (angle < 0) angle += 360;
             return angle % 360;
@@ -358,14 +361,31 @@
 
         function initDrag() {
             [hourHand, minuteHand, secondHand].forEach(el => {
+                // 电脑端
                 el.addEventListener('mousedown', e => {
                     e.preventDefault();
                     isDragging = true;
                     activeHand = el === hourHand ? 'hour' : el === minuteHand ? 'minute' : 'second';
                 });
+                // 👈 手机端触摸事件（修复手机滑动失效）
+                el.addEventListener('touchstart', e => {
+                    e.preventDefault();
+                    isDragging = true;
+                    activeHand = el === hourHand ? 'hour' : el === minuteHand ? 'minute' : 'second';
+                });
             });
+            // 电脑端结束
             document.addEventListener('mouseup', () => { isDragging = false; activeHand = null });
+            // 👈 手机端触摸结束
+            document.addEventListener('touchend', () => { isDragging = false; activeHand = null });
+            document.addEventListener('touchcancel', () => { isDragging = false; activeHand = null });
+            
+            // 移动事件（兼容电脑+手机）
             document.addEventListener('mousemove', e => {
+                if (!isDragging || !activeHand) return;
+                setByDrag(activeHand, getMouseAngle(e));
+            });
+            document.addEventListener('touchmove', e => {
                 if (!isDragging || !activeHand) return;
                 setByDrag(activeHand, getMouseAngle(e));
             });

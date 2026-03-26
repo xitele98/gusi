@@ -8,18 +8,16 @@
         :root {
             --clock-size: 90vw;
             --max-clock-size: 450px;
-            --hand-hour: #5d4037; /* 深棕色 */
-            --hand-minute: #455a64; /* 深灰蓝 */
-            --hand-second: #e53935; /* 鲜红色 */
+            --hand-hour: #5d4037;
+            --hand-minute: #455a64;
+            --hand-second: #e53935;
             --tick-major-color: #333;
             --tick-minor-color: #ccc;
             
-            /* 按钮颜色变量 */
             --btn-hour: #8d6e63;
             --btn-minute: #78909c;
             --btn-second: #ef5350;
             --btn-reset: #f44336;
-            --btn-bg: #4CAF50;
         }
 
         body {
@@ -32,7 +30,8 @@
             padding: 10px;
             box-sizing: border-box;
             min-height: 100vh;
-            touch-action: none; 
+            /* 【修改点1】移除 body 的 touch-action: none，允许页面整体滚动 */
+            touch-action: auto; 
             user-select: none;
             -webkit-user-select: none;
         }
@@ -63,6 +62,9 @@
             height: var(--clock-size); 
             max-height: var(--max-clock-size); 
             margin: 10px auto;
+            /* 【修改点2】只在时钟容器内禁止默认触摸行为（防止拖指针时滚动） */
+            touch-action: none; 
+            z-index: 50; /* 确保捕获触摸 */
         }
 
         .clock-face {
@@ -94,6 +96,8 @@
             z-index: 10; 
             cursor: grab; 
             transition: filter 0.1s;
+            /* 确保指针本身不阻止冒泡，让 wrapper 处理 */
+            touch-action: none; 
         }
 
         .hand:active { 
@@ -205,6 +209,7 @@
             color: white; 
             border: none; 
             border-radius: 10px; 
+            /* 按钮允许点击，但不需要特殊 touch-action */
             touch-action: manipulation;
             font-weight: bold; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.15);
@@ -217,7 +222,6 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.1); 
         }
 
-        /* 按钮颜色区分 */
         .btn-hour { background-color: var(--btn-hour); }
         .btn-minute { background-color: var(--btn-minute); }
         .btn-second { background-color: var(--btn-second); }
@@ -226,7 +230,7 @@
             background-color: var(--btn-reset); 
             width: 100%; 
             max-width: 220px;
-            margin: 0 auto; /* 确保居中 */
+            margin: 0 auto; 
             font-size: 18px;
         }
 
@@ -242,6 +246,8 @@
             font-size: 1rem; 
             color: #444;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            /* 确保内容区域可以滚动 */
+            touch-action: auto; 
         }
         
         .info-box h3 {
@@ -270,10 +276,10 @@
 </head>
 <body>
 
-    <h1>📚为小朋友设计的<br>可交互时钟</h1>
-    <div class="hint">👆 试着拖动指针，看看时间怎么变！</div>
+   
+    <div class="hint">👆 试着拖动指针，看看时间怎么变！（页面可上下滑动查看下方知识）</div>
 
-    <div class="clock-wrapper">
+    <div class="clock-wrapper" id="clockWrapper">
         <div class="clock-face" id="clockFace">
             <div class="center-point"></div>
             <div class="hand hour-hand" id="hourHand" data-type="hour"></div>
@@ -286,14 +292,11 @@
     <div class="debug" id="debugInfo">Total: 0s</div>
 
     <div class="controls">
-        <!-- 指针控制按钮组 -->
         <div class="btn-group">
             <button class="btn-hour" id="btnHour" onclick="toggleHand('hourHand', this)">隐藏时针</button>
             <button class="btn-minute" id="btnMinute" onclick="toggleHand('minuteHand', this)">隐藏分针</button>
             <button class="btn-second" id="btnSecond" onclick="toggleHand('secondHand', this)">隐藏秒针</button>
         </div>
-        
-        <!-- 重置按钮单独居中 -->
         <button class="reset-btn" onclick="resetToZero()">🔄 重置到 00:00:00</button>
     </div>
 
@@ -307,6 +310,10 @@
             <li><strong>秒针</strong>：走 1 小格 = 1 秒钟，走 1 大格 = 5 秒钟。</li>
             <li><strong>1 时 = 60 分</strong>，<strong>1 分 = 60 秒</strong>。</li>
         </ol>
+        <p style="text-align: center; color: #888; margin-top: 15px;">--- 继续向下滑动 ---</p>
+        <div style="height: 500px; background: #f9f9f9; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #ccc;">
+            (这里是为了演示页面可以滚动而预留的空白区域)
+        </div>
     </div>
 
     <script>
@@ -316,6 +323,7 @@
         const digitalTime = document.getElementById('digitalTime');
         const debugInfo = document.getElementById('debugInfo');
         const clockFace = document.getElementById('clockFace');
+        const clockWrapper = document.getElementById('clockWrapper');
 
         let totalSeconds = 0;
         let isDragging = false;
@@ -329,7 +337,6 @@
             oldTicks.forEach(el => el.remove());
             const radius = clockFace.clientWidth / 2;
 
-            // 生成60个刻度
             for (let i = 0; i < 60; i++) {
                 const tick = document.createElement('div');
                 const isMajor = i % 5 === 0;
@@ -343,7 +350,6 @@
                 clockFace.appendChild(tick);
             }
 
-            // 生成数字 (1-12)
             for (let i = 1; i <= 12; i++) {
                 const num = document.createElement('div');
                 num.className = 'number';
@@ -401,7 +407,10 @@
         }
 
         function handleStart(e, type) {
-            e.preventDefault();
+            // 【修改点3】只在正在拖动指针时阻止默认行为（防止滚动）
+            // 如果事件发生在时钟区域外，不阻止
+            if (e.cancelable) e.preventDefault(); 
+            
             isDragging = true;
             dragTargetType = type;
             
@@ -413,7 +422,7 @@
 
         function handleMove(e) {
             if (!isDragging) return;
-            e.preventDefault();
+            if (e.cancelable) e.preventDefault(); // 拖动过程中坚决阻止滚动
 
             const currentAngle = getAngle(e);
             let delta = currentAngle - lastMouseAngle;
@@ -446,14 +455,26 @@
             dragTargetType = null;
         }
 
+        // 【修改点4】将事件监听器绑定到 clockWrapper 而不是 window
+        // 这样只有触摸发生在时钟区域时才会触发拖动逻辑，其他地方正常滚动
         [hourHand, minuteHand, secondHand].forEach(hand => {
             const type = hand.dataset.type;
+            // 注意：这里依然绑定在 hand 上启动，但 move/end 我们改一下策略
             hand.addEventListener('mousedown', (e) => handleStart(e, type));
             hand.addEventListener('touchstart', (e) => handleStart(e, type), {passive: false});
         });
 
-        window.addEventListener('mousemove', handleMove);
-        window.addEventListener('touchmove', handleMove, {passive: false});
+        // 将 move 和 end 绑定到 clockWrapper，限制作用域
+        clockWrapper.addEventListener('mousemove', handleMove);
+        clockWrapper.addEventListener('touchmove', handleMove, {passive: false});
+        clockWrapper.addEventListener('mouseup', handleEnd);
+        clockWrapper.addEventListener('touchend', handleEnd);
+        
+        // 为了防止手指移出时钟区域后拖动失效，也可以保留 window 监听，但需要判断 isDragging
+        // 上面的 clockWrapper 监听对于大多数情况足够，但如果用户手速快划出盒子，可能需要 window 兜底
+        // 这里采用混合策略：如果 isDragging 为真，window 也监听，但只有在 isDragging 时才 preventDefault
+        window.addEventListener('mousemove', (e) => { if(isDragging) handleMove(e); });
+        window.addEventListener('touchmove', (e) => { if(isDragging) handleMove(e); }, {passive: false});
         window.addEventListener('mouseup', handleEnd);
         window.addEventListener('touchend', handleEnd);
 
@@ -462,14 +483,12 @@
             updateView();
         }
 
-        // 修改后的切换逻辑：动态修改按钮文字
         function toggleHand(id, btnElement) {
             const el = document.getElementById(id);
             const isHidden = el.style.visibility === 'hidden';
             
             if (isHidden) {
                 el.style.visibility = 'visible';
-                // 根据ID判断是指针类型，设置对应的文字
                 if (id === 'hourHand') btnElement.innerText = '隐藏时针';
                 if (id === 'minuteHand') btnElement.innerText = '隐藏分针';
                 if (id === 'secondHand') btnElement.innerText = '隐藏秒针';

@@ -216,28 +216,35 @@ text-shadow: 0 0 20px rgba(0,0,0,0.5); /* 可选：增加一点模糊感 */
 }
 
 .btn-group {
-display: flex;
-justify-content: center;
-flex-wrap: wrap;
-gap: 10px;
-margin-bottom: 5px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: nowrap; /* 强制单行 */
+    gap: 10px;
+    margin-bottom: 5px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+.btn-group::-webkit-scrollbar {
+    display: none;
 }
 
 button {
-padding: 12px 20px;
-font-size: 16px;
-cursor: pointer;
-color: white;
-border: none;
-border-radius: 10px;
-touch-action: manipulation;
-font-weight: bold;
-box-shadow: 0 4px 6px rgba(0,0,0,0.15);
-transition: transform 0.1s, box-shadow 0.1s;
-font-family: inherit;
-flex: 1; /* 让按钮自动填充空间 */
-min-width: 120px; /* 设置最小宽度 */
-max-width: 160px; /* 限制最大宽度，与上面按钮协调 */
+    padding: 12px 10px;
+    font-size: 15px;
+    cursor: pointer;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    touch-action: manipulation;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+    transition: transform 0.1s, box-shadow 0.1s;
+    font-family: inherit;
+    flex: 0 1 28%; /* 适配核心 */
+    max-width: 140px;
+    height: 50px;
+    white-space: nowrap;
+    font-size: clamp(12px, 3vw, 15px);
 }
 
 button:active {

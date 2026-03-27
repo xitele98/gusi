@@ -317,7 +317,7 @@ font-family: monospace;
 <!-- 第二排按钮：重置与隐藏时间 -->
 <div class="btn-group">
 <button class="reset-btn" onclick="resetToZero()">🔄 重置时间</button>
-<button class="toggle-btn" onclick="toggleDigitalTime()">🙈 隐藏数字时间</button>
+<button class="toggle-btn" onclick="toggleDigitalTime()">🙈 藏数字时间</button>
 </div>
 </div>
 
@@ -539,10 +539,10 @@ const btn = document.querySelector('.toggle-btn');
 // 检查是否包含 hidden 类
 if (digitalTime.classList.contains('hidden')) {
 digitalTime.classList.remove('hidden');
-btn.innerText = '🙈 隐藏数字时间';
+btn.innerText = '🙈 藏数字时间';
 } else {
 digitalTime.classList.add('hidden');
-btn.innerText = '👀 显示数字时间';
+btn.innerText = '👀 显数字时间';
 }
 }
 
@@ -551,7 +551,7 @@ totalSeconds = 0;
 updateView();
 // 重置时确保数字时间是可见的
 digitalTime.classList.remove('hidden');
-document.querySelector('.toggle-btn').innerText = '🙈 隐藏数字时间';
+document.querySelector('.toggle-btn').innerText = '🙈 藏数字时间';
 }
 
 function toggleHand(id, btnElement) {

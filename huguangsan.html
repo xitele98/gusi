@@ -292,7 +292,7 @@ font-family: monospace;
 </head>
 <body>
 
-<div class="hint">👆 在表盘上拖动指针！看看时间的变化吧！（页面可上下滑动查看下方知识）</div>
+<div class="hint">👆 在表盘上拖动指针！看看时间的变化吧（页面可上下滑动查看下方知识）</div>
 
 <div class="clock-wrapper" id="clockWrapper">
 <div class="clock-face" id="clockFace">
@@ -421,73 +421,106 @@ return Math.atan2(dy, dx) * (180 / Math.PI) + 90;
 
 // 【核心优化】计算点击点距离哪个指针最近，并开始拖动它
 function startDragAtPosition(e) {
-if (isDragging) return;
-if (e.cancelable) e.preventDefault();
-
-const rect = clockFace.getBoundingClientRect();
-const centerX = rect.left + rect.width / 2;
-const centerY = rect.top + rect.height / 2;
-
-let clientX, clientY;
-if (e.touches && e.touches.length > 0) {
-clientX = e.touches[0].clientX;
-clientY = e.touches[0].clientY;
-} else {
-clientX = e.clientX;
-clientY = e.clientY;
-}
-
-// 计算点击点坐标
-const clickX = clientX;
-const clickY = clientY;
-
-// 获取三个指针当前的末端坐标
-const handLengths = {
-hour: 0.25,
-minute: 0.35,
-second: 0.42
-};
-
-const radius = rect.width / 2;
-const currentAngles = {
-hour: (totalSeconds * (360 / 43200)) * (Math.PI / 180),
-minute: (totalSeconds * 0.1) * (Math.PI / 180),
-second: (totalSeconds * 6) * (Math.PI / 180)
-};
-
-const cx = centerX;
-const cy = centerY;
-
-// 计算指针末端坐标
-const getHandTip = (angleRad, lengthRatio) => {
-const len = radius * lengthRatio;
-return {
-x: cx + Math.sin(angleRad) * len,
-y: cy - Math.cos(angleRad) * len
-};
-};
-
-const hourTip = getHandTip(currentAngles.hour, handLengths.hour);
-const minuteTip = getHandTip(currentAngles.minute, handLengths.minute);
-const secondTip = getHandTip(currentAngles.second, handLengths.second);
-
-// 计算距离
-const dist = (x1, y1, x2, y2) => Math.sqrt((x1-x2)**2 + (y1-y2)**2);
-const dHour = dist(clickX, clickY, hourTip.x, hourTip.y);
-const dMinute = dist(clickX, clickY, minuteTip.x, minuteTip.y);
-const dSecond = dist(clickX, clickY, secondTip.x, secondTip.y);
-
-// 判定最近的指针
-let target = 'second';
-if (dHour < 60 && (dHour < dMinute && dHour < dSecond)) target = 'hour';
-else if (dMinute < 60 && (dMinute < dHour && dMinute < dSecond)) target = 'minute';
-
-isDragging = true;
-dragTargetType = target;
-const currentAngle = getAngle(e);
-lastMouseAngle = currentAngle;
-accumulatedDeltaAngle = 0;
-startTotalSeconds = totalSeconds;
+    if (isDragging) return;
+    if (e.cancelable) e.preventDefault();
+    
+    const rect = clockFace.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    let clientX, clientY;
+    if (e.touches && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+    } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+    }
+    
+    // 获取点击坐标
+    const clickX = clientX;
+    const clickY = clientY;
+    
+    // 获取三个指针当前的末端坐标
+    // 注意：这里增加了对指针可见性的判断
+    const handLengths = { hour: 0.25, minute: 0.35, second: 0.42 };
+    
+    // 【关键优化】检查指针是否可见
+    // 只有当指针可见时，才计算其末端位置；否则设为 null
+    const isHourVisible = hourHand.style.visibility !== 'hidden';
+    const isMinuteVisible = minuteHand.style.visibility !== 'hidden';
+    const isSecondVisible = secondHand.style.visibility !== 'hidden';
+    
+    const radius = rect.width / 2;
+    const currentAngles = {
+        hour: (totalSeconds * (360 / 43200)) * (Math.PI / 180),
+        minute: (totalSeconds * 0.1) * (Math.PI / 180),
+        second: (totalSeconds * 6) * (Math.PI / 180)
+    };
+    
+    const cx = centerX;
+    const cy = centerY;
+    
+    // 计算指针末端坐标 (仅当可见时)
+    const getHandTip = (angleRad, lengthRatio) => {
+        if (!lengthRatio) return null; // lengthRatio 为 false/null 时直接返回 null
+        const len = radius * lengthRatio;
+        return { 
+            x: cx + Math.sin(angleRad) * len, 
+            y: cy - Math.cos(angleRad) * len 
+        };
+    };
+    
+    // 仅在指针可见时计算坐标，否则设为 null
+    const hourTip = isHourVisible ? getHandTip(currentAngles.hour, handLengths.hour) : null;
+    const minuteTip = isMinuteVisible ? getHandTip(currentAngles.minute, handLengths.minute) : null;
+    const secondTip = isSecondVisible ? getHandTip(currentAngles.second, handLengths.second) : null;
+    
+    // 计算距离的函数
+    const dist = (x1, y1, x2, y2) => Math.sqrt((x1-x2)**2 + (y1-y2)**2);
+    
+    // 初始化距离为无穷大，代表不可点击
+    let dHour = Infinity;
+    let dMinute = Infinity;
+    let dSecond = Infinity;
+    
+    // 仅在指针可见且坐标存在时计算距离
+    if (hourTip) dHour = dist(clickX, clickY, hourTip.x, hourTip.y);
+    if (minuteTip) dMinute = dist(clickX, clickY, minuteTip.x, minuteTip.y);
+    if (secondTip) dSecond = dist(clickX, clickY, secondTip.x, secondTip.y);
+    
+    // 【判定逻辑优化】
+    // 找出距离最近且在有效范围内（60像素）的指针
+    // 注意：这里只考虑可见的指针
+    let target = null;
+    
+    // 检查时针（仅在可见且距离小于60时）
+    if (isHourVisible && dHour < 60) {
+        if (dHour < dMinute && dHour < dSecond) {
+            target = 'hour';
+        }
+    }
+    
+    // 检查分针（仅在可见且距离小于60时）
+    if (!target && isMinuteVisible && dMinute < 60) {
+        if (dMinute < dHour && dMinute < dSecond) {
+            target = 'minute';
+        }
+    }
+    
+    // 检查秒针（仅在可见且距离小于60时）
+    if (!target && isSecondVisible && dSecond < 60) {
+        target = 'second';
+    }
+    
+    // 如果没有找到有效的目标（比如所有指针都隐藏了，或者点击位置太远），则不开始拖拽
+    if (!target) return;
+    
+    isDragging = true;
+    dragTargetType = target;
+    const currentAngle = getAngle(e);
+    lastMouseAngle = currentAngle;
+    accumulatedDeltaAngle = 0;
+    startTotalSeconds = totalSeconds;
 }
 
 function handleMove(e) {

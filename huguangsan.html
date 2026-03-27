@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>📚为小朋友设计的可交互时钟 (优化版)</title>
+<style>
+:root {
+--clock-size: 90vw;
+--max-clock-size: 450px;
+--hand-hour: #5d4037;
+--hand-minute: #455a64;
+--hand-second: #e53935;
+--tick-major-color: #333;
+--tick-minor-color: #ccc;
+--btn-hour: #8d6e63;
+--btn-minute: #78909c;
+--btn-second: #ef5350;
+--btn-reset: #f44336;
+--btn-toggle: #673ab7; /* 新增紫色按钮风格 */
+}
+
+body {
+font-family: 'Comic Sans MS', 'YouYuan', 'Microsoft YaHei', sans-serif;
+display: flex;
+flex-direction: column;
+align-items: center;
+background-color: #f0f8ff;
+margin: 0;
+padding: 10px;
+box-sizing: border-box;
+min-height: 100vh;
+touch-action: auto;
+user-select: none;
+-webkit-user-select: none;
+}
+
+h1 {
+color: #333;
+font-size: clamp(1.2rem, 5vw, 1.8rem);
+text-align: center;
+margin: 10px 0;
+line-height: 1.4;
+}
+
+.hint {
+color: #555;
+font-size: 0.9rem;
+text-align: center;
+margin-bottom: 15px;
+background: #fff;
+padding: 8px 15px;
+border-radius: 20px;
+box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.clock-wrapper {
+position: relative;
+width: var(--clock-size);
+max-width: var(--max-clock-size);
+height: var(--clock-size);
+max-height: var(--max-clock-size);
+margin: 10px auto;
+touch-action: none;
+z-index: 50;
+}
+
+.clock-face {
+width: 100%;
+height: 100%;
+border: 8px solid #333;
+border-radius: 50%;
+background-color: white;
+position: relative;
+box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+box-sizing: border-box;
+}
+
+.center-point {
+position: absolute;
+top: 50%;
+left: 50%;
+width: 20px;
+height: 20px;
+background-color: #333;
+border-radius: 50%;
+transform: translate(-50%, -50%);
+z-index: 30;
+border: 3px solid #fff;
+pointer-events: none;
+}
+
+.hand {
+position: absolute;
+bottom: 50%;
+left: 50%;
+transform-origin: bottom center;
+border-radius: 4px;
+transform: translateX(-50%) rotate(0deg);
+z-index: 10;
+cursor: grab;
+transition: filter 0.1s;
+touch-action: none;
+}
+
+.hand:active {
+cursor: grabbing;
+filter: brightness(0.85);
+z-index: 100 !important;
+}
+
+.hour-hand {
+width: 12px;
+height: 25%;
+background-color: var(--hand-hour);
+max-height: 110px;
+z-index: 12;
+}
+
+.minute-hand {
+width: 8px;
+height: 35%;
+background-color: var(--hand-minute);
+max-height: 150px;
+z-index: 13;
+}
+
+.second-hand {
+width: 4px;
+height: 42%;
+background-color: var(--hand-second);
+max-height: 170px;
+z-index: 14;
+bottom: 50%;
+transform-origin: bottom center;
+}
+
+.second-hand::after {
+content: '';
+position: absolute;
+top: 100%;
+left: 0;
+width: 100%;
+height: 25px;
+background-color: var(--hand-second);
+border-radius: 0 0 2px 2px;
+}
+
+.tick {
+position: absolute;
+left: 50%;
+top: 50%;
+transform-origin: top center;
+border-radius: 1px;
+pointer-events: none;
+}
+
+.tick.major {
+background-color: var(--tick-major-color);
+width: 4px;
+height: 16px;
+z-index: 1;
+}
+
+.tick.minor {
+background-color: var(--tick-minor-color);
+width: 2px;
+height: 8px;
+z-index: 1;
+}
+
+.number {
+position: absolute;
+font-size: clamp(1.2rem, 5vw, 1.8rem);
+font-weight: bold;
+color: #333;
+text-align: center;
+width: 1.5em;
+height: 1.5em;
+line-height: 1.5em;
+left: 50%;
+top: 50%;
+margin-left: -0.75em;
+margin-top: -0.75em;
+pointer-events: none;
+z-index: 2;
+}
+
+.controls {
+margin-top: 20px;
+text-align: center;
+width: 100%;
+max-width: 500px;
+display: flex;
+flex-direction: column;
+gap: 12px;
+}
+
+.time-display {
+font-size: clamp(2.5rem, 9vw, 3.5rem);
+font-weight: bold;
+color: #333;
+font-variant-numeric: tabular-nums;
+background: #fff;
+padding: 10px 30px;
+border-radius: 15px;
+border: 3px solid #ddd;
+box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+letter-spacing: 2px;
+transition: color 0.3s ease; /* 添加过渡效果 */
+}
+
+.time-display.hidden {
+color: transparent; /* 隐藏文字颜色，保留边框 */
+text-shadow: 0 0 20px rgba(0,0,0,0.5); /* 可选：增加一点模糊感 */
+}
+
+.btn-group {
+display: flex;
+justify-content: center;
+flex-wrap: wrap;
+gap: 10px;
+margin-bottom: 5px;
+}
+
+button {
+padding: 12px 20px;
+font-size: 16px;
+cursor: pointer;
+color: white;
+border: none;
+border-radius: 10px;
+touch-action: manipulation;
+font-weight: bold;
+box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+transition: transform 0.1s, box-shadow 0.1s;
+font-family: inherit;
+flex: 1; /* 让按钮自动填充空间 */
+min-width: 120px; /* 设置最小宽度 */
+max-width: 160px; /* 限制最大宽度，与上面按钮协调 */
+}
+
+button:active {
+transform: scale(0.95) translateY(2px);
+box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.btn-hour { background-color: var(--btn-hour); }
+.btn-minute { background-color: var(--btn-minute); }
+.btn-second { background-color: var(--btn-second); }
+.reset-btn { background-color: var(--btn-reset); }
+.toggle-btn { background-color: var(--btn-toggle); }
+
+.info-box {
+margin-top: 25px;
+background: #fff;
+padding: 20px;
+border-radius: 15px;
+border: 2px solid #e0e0e0;
+width: 90%;
+max-width: 500px;
+line-height: 1.8;
+font-size: 1rem;
+color: #444;
+box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+touch-action: auto;
+}
+
+.info-box h3 {
+color: #d32f2f;
+margin-top: 0;
+border-bottom: 2px solid #ffebee;
+padding-bottom: 10px;
+}
+
+.info-box ol {
+padding-left: 20px;
+margin: 0;
+}
+
+.info-box li {
+margin-bottom: 8px;
+}
+
+.debug {
+font-size: 12px;
+color: #999;
+margin-top: 10px;
+font-family: monospace;
+}
+</style>
+</head>
+<body>
+
+<div class="hint">👆 现在可以在钟面上任意位置按住拖动指针！（页面可上下滑动查看下方知识）</div>
+
+<div class="clock-wrapper" id="clockWrapper">
+<div class="clock-face" id="clockFace">
+<div class="center-point"></div>
+<div class="hand hour-hand" id="hourHand" data-type="hour"></div>
+<div class="hand minute-hand" id="minuteHand" data-type="minute"></div>
+<div class="hand second-hand" id="secondHand" data-type="second"></div>
+</div>
+</div>
+
+<div class="time-display" id="digitalTime">00:00:00</div>
+<div class="debug" id="debugInfo">Total: 0s</div>
+
+<div class="controls">
+<!-- 第一排按钮：隐藏指针 -->
+<div class="btn-group">
+<button class="btn-hour" id="btnHour" onclick="toggleHand('hourHand', this)">隐藏时针</button>
+<button class="btn-minute" id="btnMinute" onclick="toggleHand('minuteHand', this)">隐藏分针</button>
+<button class="btn-second" id="btnSecond" onclick="toggleHand('secondHand', this)">隐藏秒针</button>
+</div>
+
+<!-- 第二排按钮：重置与隐藏时间 -->
+<div class="btn-group">
+<button class="reset-btn" onclick="resetToZero()">🔄 重置时间</button>
+<button class="toggle-btn" onclick="toggleDigitalTime()">🙈 隐藏数字时间</button>
+</div>
+</div>
+
+<div class="info-box">
+<h3>📕 钟表小知识</h3>
+<ol>
+<li>钟表一共有 <strong>12 个大格</strong>，<strong>60 个小格</strong>。</li>
+<li><strong>1 大格 = 5 小格</strong>。</li>
+<li><strong>时针</strong>：走 1 大格 = 1 小时。</li>
+<li><strong>分针</strong>：走 1 小格 = 1 分钟，走 1 大格 = 5 分钟。</li>
+<li><strong>秒针</strong>：走 1 小格 = 1 秒钟，走 1 大格 = 5 秒钟。</li>
+<li><strong>1 时 = 60 分</strong>，<strong>1 分 = 60 秒</strong>。</li>
+</ol>
+<p style="text-align: center; color: #888; margin-top: 15px;">--- 继续向下滑动 ---</p>
+<div style="height: 500px; background: #f9f9f9; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #ccc;">
+(这里是为了演示页面可以滚动而预留的空白区域)
+</div>
+</div>
+
+<script>
+const hourHand = document.getElementById('hourHand');
+const minuteHand = document.getElementById('minuteHand');
+const secondHand = document.getElementById('secondHand');
+const digitalTime = document.getElementById('digitalTime');
+const debugInfo = document.getElementById('debugInfo');
+const clockFace = document.getElementById('clockFace');
+const clockWrapper = document.getElementById('clockWrapper');
+
+let totalSeconds = 0;
+let isDragging = false;
+let dragTargetType = null; // 'hour', 'minute', 'second'
+let lastMouseAngle = 0;
+let accumulatedDeltaAngle = 0;
+let startTotalSeconds = 0;
+
+function createClockFace() {
+const oldTicks = clockFace.querySelectorAll('.tick, .number');
+oldTicks.forEach(el => el.remove());
+const radius = clockFace.clientWidth / 2;
+for (let i = 0; i < 60; i++) {
+const tick = document.createElement('div');
+const isMajor = i % 5 === 0;
+tick.className = isMajor ? 'tick major' : 'tick minor';
+const angle = i * 6;
+const length = isMajor ? 16 : 8;
+tick.style.transform = `translateX(-50%) rotate(${angle}deg) translateY(-${radius - length}px)`;
+clockFace.appendChild(tick);
+}
+for (let i = 1; i <= 12; i++) {
+const num = document.createElement('div');
+num.className = 'number';
+num.innerText = i;
+const angle = (i * 30) * (Math.PI / 180);
+const numRadius = radius - 45;
+const x = Math.sin(angle) * numRadius;
+const y = -Math.cos(angle) * numRadius;
+num.style.transform = `translate(${x}px, ${y}px)`;
+clockFace.appendChild(num);
+}
+}
+
+function mod(n, m) {
+return ((n % m) + m) % m;
+}
+
+function updateView() {
+const sDeg = totalSeconds * 6;
+const mDeg = totalSeconds * 0.1;
+const hDeg = totalSeconds * (360 / 43200);
+
+hourHand.style.transform = `translateX(-50%) rotate(${hDeg}deg)`;
+minuteHand.style.transform = `translateX(-50%) rotate(${mDeg}deg)`;
+secondHand.style.transform = `translateX(-50%) rotate(${sDeg}deg)`;
+
+const normalizedSecs = mod(totalSeconds, 43200);
+const h = Math.floor(normalizedSecs / 3600);
+const m = Math.floor(mod(normalizedSecs, 3600) / 60);
+const s = Math.round(mod(normalizedSecs, 60));
+
+digitalTime.innerText = h.toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0') + ':' + s.toString().padStart(2, '0');
+debugInfo.innerText = `Total: ${totalSeconds.toFixed(2)}s`;
+}
+
+// 获取点击位置相对于圆心的角度
+function getAngle(e) {
+const rect = clockFace.getBoundingClientRect();
+const centerX = rect.left + rect.width / 2;
+const centerY = rect.top + rect.height / 2;
+let clientX, clientY;
+if (e.touches && e.touches.length > 0) {
+clientX = e.touches[0].clientX;
+clientY = e.touches[0].clientY;
+} else {
+clientX = e.clientX;
+clientY = e.clientY;
+}
+const dx = clientX - centerX;
+const dy = clientY - centerY;
+return Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+}
+
+// 【核心优化】计算点击点距离哪个指针最近，并开始拖动它
+function startDragAtPosition(e) {
+if (isDragging) return;
+if (e.cancelable) e.preventDefault();
+
+const rect = clockFace.getBoundingClientRect();
+const centerX = rect.left + rect.width / 2;
+const centerY = rect.top + rect.height / 2;
+
+let clientX, clientY;
+if (e.touches && e.touches.length > 0) {
+clientX = e.touches[0].clientX;
+clientY = e.touches[0].clientY;
+} else {
+clientX = e.clientX;
+clientY = e.clientY;
+}
+
+// 计算点击点坐标
+const clickX = clientX;
+const clickY = clientY;
+
+// 获取三个指针当前的末端坐标
+const handLengths = {
+hour: 0.25,
+minute: 0.35,
+second: 0.42
+};
+
+const radius = rect.width / 2;
+const currentAngles = {
+hour: (totalSeconds * (360 / 43200)) * (Math.PI / 180),
+minute: (totalSeconds * 0.1) * (Math.PI / 180),
+second: (totalSeconds * 6) * (Math.PI / 180)
+};
+
+const cx = centerX;
+const cy = centerY;
+
+// 计算指针末端坐标
+const getHandTip = (angleRad, lengthRatio) => {
+const len = radius * lengthRatio;
+return {
+x: cx + Math.sin(angleRad) * len,
+y: cy - Math.cos(angleRad) * len
+};
+};
+
+const hourTip = getHandTip(currentAngles.hour, handLengths.hour);
+const minuteTip = getHandTip(currentAngles.minute, handLengths.minute);
+const secondTip = getHandTip(currentAngles.second, handLengths.second);
+
+// 计算距离
+const dist = (x1, y1, x2, y2) => Math.sqrt((x1-x2)**2 + (y1-y2)**2);
+const dHour = dist(clickX, clickY, hourTip.x, hourTip.y);
+const dMinute = dist(clickX, clickY, minuteTip.x, minuteTip.y);
+const dSecond = dist(clickX, clickY, secondTip.x, secondTip.y);
+
+// 判定最近的指针
+let target = 'second';
+if (dHour < 60 && (dHour < dMinute && dHour < dSecond)) target = 'hour';
+else if (dMinute < 60 && (dMinute < dHour && dMinute < dSecond)) target = 'minute';
+
+isDragging = true;
+dragTargetType = target;
+const currentAngle = getAngle(e);
+lastMouseAngle = currentAngle;
+accumulatedDeltaAngle = 0;
+startTotalSeconds = totalSeconds;
+}
+
+function handleMove(e) {
+if (!isDragging) return;
+if (e.cancelable) e.preventDefault();
+const currentAngle = getAngle(e);
+let delta = currentAngle - lastMouseAngle;
+if (delta > 180) delta -= 360;
+if (delta < -180) delta += 360;
+accumulatedDeltaAngle += delta;
+lastMouseAngle = currentAngle;
+
+let factor = 0;
+if (dragTargetType === 'second') factor = 60 / 360;
+else if (dragTargetType === 'minute') factor = 3600 / 360;
+else if (dragTargetType === 'hour') factor = 43200 / 360;
+
+totalSeconds = startTotalSeconds + (accumulatedDeltaAngle * factor);
+updateView();
+}
+
+function handleEnd() {
+if (!isDragging) return;
+isDragging = false;
+if (dragTargetType === 'second') {
+totalSeconds = Math.round(totalSeconds);
+} else if (dragTargetType === 'minute' || dragTargetType === 'hour') {
+totalSeconds = Math.round(totalSeconds / 60) * 60;
+}
+updateView();
+dragTargetType = null;
+}
+
+// 绑定事件
+clockFace.addEventListener('mousedown', startDragAtPosition);
+clockFace.addEventListener('touchstart', startDragAtPosition, {passive: false});
+
+clockWrapper.addEventListener('mousemove', handleMove);
+clockWrapper.addEventListener('touchmove', handleMove, {passive: false});
+clockWrapper.addEventListener('mouseup', handleEnd);
+clockWrapper.addEventListener('touchend', handleEnd);
+
+window.addEventListener('mouseup', handleEnd);
+window.addEventListener('touchend', handleEnd);
+
+// 【修改】切换数字时间显示/隐藏
+function toggleDigitalTime() {
+const btn = document.querySelector('.toggle-btn');
+// 检查是否包含 hidden 类
+if (digitalTime.classList.contains('hidden')) {
+digitalTime.classList.remove('hidden');
+btn.innerText = '🙈 隐藏数字时间';
+} else {
+digitalTime.classList.add('hidden');
+btn.innerText = '👀 显示数字时间';
+}
+}
+
+function resetToZero() {
+totalSeconds = 0;
+updateView();
+// 重置时确保数字时间是可见的
+digitalTime.classList.remove('hidden');
+document.querySelector('.toggle-btn').innerText = '🙈 隐藏数字时间';
+}
+
+function toggleHand(id, btnElement) {
+const el = document.getElementById(id);
+const isHidden = el.style.visibility === 'hidden';
+if (isHidden) {
+el.style.visibility = 'visible';
+if (id === 'hourHand') btnElement.innerText = '隐藏时针';
+if (id === 'minuteHand') btnElement.innerText = '隐藏分针';
+if (id === 'secondHand') btnElement.innerText = '隐藏秒针';
+} else {
+el.style.visibility = 'hidden';
+if (id === 'hourHand') btnElement.innerText = '显示时针';
+if (id === 'minuteHand') btnElement.innerText = '显示分针';
+if (id === 'secondHand') btnElement.innerText = '显示秒针';
+}
+}
+
+let resizeTimeout;
+window.addEventListener('resize', () => {
+clearTimeout(resizeTimeout);
+resizeTimeout = setTimeout(() => {
+createClockFace();
+updateView();
+}, 200);
+});
+
+createClockFace();
+updateView();
+</script>
+</body>
+</html>

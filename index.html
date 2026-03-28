@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小学古诗75+80首</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+        .search-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        #search-input {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            width: 70%;
+            max-width: 500px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        #search-input:focus {
+            border-color: #3498db;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        #random-btn {
+            background-color: #e74c3c;
+        }
+        #random-btn:hover {
+            background-color: #c0392b;
+        }
+        #back-btn {
+            background-color: #2ecc71;
+            display: none; /* 默认隐藏返回按钮 */
+        }
+        #back-btn:hover {
+            background-color: #27ae60;
+        }
+
+        /* 年级模块样式 */
+        .grade-section {
+            margin-bottom: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .grade-title {
+            background-color: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* 古诗列表优化 - 固定3列布局 */
+        .poem-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 固定3列 */
+            gap: 15px;
+            padding: 20px;
+        }
+        .poem-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            /* 核心优化：给序号预留右侧空间 */
+            padding-right: 35px;
+        }
+
+        /* 序号样式 - 统一优化 */
+        .poem-number {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background-color: #3498db;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            /* 增加层级避免被遮挡 */
+            z-index: 10;
+        }
+        .poem-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* 标题较长的样式调整 */
+        .poem-item.long-title {
+            grid-column: span 2; /* 标题长的占2列 */
+        }
+        .poem-item.extra-long-title {
+            grid-column: span 3; /* 标题超长的占3列 */
+        }
+
+        .poem-title {
+            font-size: 16px; /* 优化字体大小 */
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        .poem-author {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        /* 朝代标注样式 */
+        .dynasty {
+            color: #3498db;
+            font-weight: normal;
+            margin-right: 4px;
+        }
+
+        .poem-detail {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            display: none;
+        }
+        .detail-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .detail-author {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 16px;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        .detail-content {
+            font-size: 18px;
+            line-height: 2;
+            white-space: pre-line;
+            text-align: center;
+        }
+        /* 新增：译文样式 */
+        .detail-translation {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #3498db;
+            font-size: 16px;
+            line-height: 1.6;
+            text-align: left;
+            border-radius: 0 5px 5px 0;
+        }
+        .detail-translation-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        /* 隐藏非目标内容的样式 */
+        .hidden {
+            display: none !important;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 992px) {
+            .poem-list {
+                grid-template-columns: repeat(2, 1fr); /* 平板显示2列 */
+            }
+            .poem-item.extra-long-title {
+                grid-column: span 2;
+            }
+        }
+
+        /* 修改手机端布局：默认2列，只有超长标题才独占1行 */
+        @media (max-width: 768px) {
+            .poem-list {
+                grid-template-columns: repeat(2, 1fr); /* 手机默认显示2列（核心修改） */
+                gap: 10px; /* 减小间距适配手机 */
+            }
+            /* 手机端标题长度规则调整 */
+            .poem-item.long-title {
+                grid-column: span 1; /* 长标题仍占1列 */
+            }
+            .poem-item.extra-long-title {
+                grid-column: span 2; /* 超长标题占2列（独占一行） */
+            }
+            .search-area {
+                flex-direction: column;
+                align-items: center;
+            }
+            #search-input {
+                width: 100%;
+            }
+            .btn {
+                width: 100%;
+                max-width: 500px;
+            }
+            .poem-detail {
+                padding: 20px 15px;
+            }
+            .detail-title {
+                font-size: 20px;
+            }
+            .detail-content {
+                font-size: 16px;
+            }
+            /* 手机端古诗项优化 - 核心修复 */
+            .poem-item {
+                padding: 12px 10px; /* 手机端给序号预留更充足的右侧空间 */
+                padding-right: 32px;
+            }
+            .poem-title {
+                font-size: 14px; /* 防止文字换行后碰到序号 */
+                line-height: 1.5;
+            }
+            .poem-author {
+                font-size: 12px;
+            }
+            /* 手机端序号微调，避免遮挡 */
+            .poem-number {
+                top: 6px;
+                right: 6px;
+                width: 22px;
+                height: 22px;
+                font-size: 11px;
+            }
+            /* 手机端译文样式调整 */
+            .detail-translation {
+                font-size: 14px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>小学古诗75+80首</h1>
+            <div class="search-area">
+                <input type="text" id="search-input" placeholder="输入诗名或诗人关键词搜索...">
+                <button class="btn" id="search-btn">搜索</button>
+                <button class="btn" id="random-btn">随机一首</button>
+                <button class="btn" id="back-btn">返回目录</button>
+            </div>
+        </header>
+
+        <!-- 按年级分模块的古诗列表 -->
+        <div id="poem-container"></div>
+
+        <div class="poem-detail" id="poem-detail">
+            <h2 class="detail-title" id="detail-title"></h2>
+            <div class="detail-author" id="detail-author"></div>
+            <div class="detail-content" id="detail-content"></div>
+            <!-- 译文将插入到这里 -->
+            <div class="detail-translation" id="detail-translation">
+                <div class="detail-translation-title">【译文】</div>
+                <div id="translation-text"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="poem-date.js"></script>
+    <script>
+        // DOM元素
+        const poemContainer = document.getElementById('poem-container');
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        const randomBtn = document.getElementById('random-btn');
+        const backBtn = document.getElementById('back-btn');
+        const poemDetail = document.getElementById('poem-detail');
+        const detailTitle = document.getElementById('detail-title');
+        const detailAuthor = document.getElementById('detail-author');
+        const detailContent = document.getElementById('detail-content');
+        const detailTranslation = document.getElementById('translation-text'); // 译文容器
+
+        // 全局变量
+        let allPoems = []; // 存储所有古诗（扁平化）
+        let currentPoemIndex = -1; // 当前选中的古诗索引
+
+ // 初始化数据 - 扁平化所有古诗并添加序号
+function initPoems() {
+    let index = 1;
+    for (const grade in ALL_POEM_DATA) {
+        ALL_POEM_DATA[grade].forEach(poem => {
+            // 核心逻辑：如果古诗数据里没有朝代，则去查表
+            poem.dynasty = poem.dynasty || POET_DYNASTY_MAP[poem.author] || "未知";
+            poem.grade = grade;
+            poem.index = index++; 
+            allPoems.push(poem);
+        });
+    }
+}
+
+        // 渲染按年级分模块的古诗列表
+        function renderPoemModules() {
+            poemContainer.innerHTML = '';
+            for (const grade in ALL_POEM_DATA) {
+                // 创建年级模块
+                const gradeSection = document.createElement('div');
+                gradeSection.className = 'grade-section';
+                gradeSection.dataset.grade = grade;
+
+                // 年级标题
+                const gradeTitle = document.createElement('div');
+                gradeTitle.className = 'grade-title';
+                gradeTitle.textContent = grade;
+                gradeSection.appendChild(gradeTitle);
+
+                // 古诗列表
+                const poemList = document.createElement('div');
+                poemList.className = 'poem-list';
+
+                // 添加该年级的古诗
+                ALL_POEM_DATA[grade].forEach((poem, idx) => {
+                    const poemItem = createPoemItem(poem);
+                    poemList.appendChild(poemItem);
+                });
+                gradeSection.appendChild(poemList);
+                poemContainer.appendChild(gradeSection);
+            }
+        }
+
+        // 创建单个古诗项
+        function createPoemItem(poem) {
+            const poemItem = document.createElement('div');
+            poemItem.className = 'poem-item';
+            poemItem.dataset.index = poem.index;
+
+            // 根据标题长度设置不同的列宽
+            if (poem.title.length > 12) {
+                poemItem.classList.add('extra-long-title'); // 超长标题占3列（大屏）/2列（手机）
+            } else if (poem.title.length > 8) {
+                poemItem.classList.add('long-title'); // 长标题占2列（大屏）/1列（手机）
+            }
+
+            // 古诗内容（添加朝代标注）
+            poemItem.innerHTML = `
+                <div class="poem-number">${poem.index}</div>
+                <div class="poem-title">${poem.title}</div>
+                <div class="poem-author">—— <span class="dynasty">[${poem.dynasty}]</span>${poem.author}</div>
+            `;
+
+            // 点击显示详情并隐藏其他内容
+            poemItem.addEventListener('click', () => {
+                showPoemDetail(poem);
+                hideOtherPoems(poem.index);
+            });
+            return poemItem;
+        }
+
+        // 显示古诗详情（详情页也显示朝代和译文）
+        function showPoemDetail(poem) {
+            detailTitle.textContent = poem.title;
+            // 详情页作者前也标注朝代
+            detailAuthor.textContent = `[${poem.dynasty}] ${poem.author}`;
+            detailContent.textContent = poem.content;
+            
+            // 设置译文
+            if (poem.translation) {
+                detailTranslation.textContent = poem.translation;
+            } else {
+                detailTranslation.textContent = "暂无译文";
+            }
+
+            poemDetail.style.display = 'block';
+            // 显示返回按钮，隐藏随机和搜索按钮
+            backBtn.style.display = 'block';
+            randomBtn.style.display = 'none';
+            searchBtn.style.display = 'none';
+
+            // 滚动到详情区域
+            poemDetail.scrollIntoView({ behavior: 'smooth' });
+            currentPoemIndex = poem.index;
+        }
+
+        // 隐藏除当前选中外的所有古诗
+        function hideOtherPoems(activeIndex) {
+            const allPoemItems = document.querySelectorAll('.poem-item');
+            allPoemItems.forEach(item => {
+                if (parseInt(item.dataset.index) !== activeIndex) {
+                    item.classList.add('hidden');
+                }
+            });
+
+            // 只显示当前古诗所在的年级模块
+            const activePoem = allPoems.find(p => p.index === activeIndex);
+            const allGradeSections = document.querySelectorAll('.grade-section');
+            allGradeSections.forEach(section => {
+                if (section.dataset.grade !== activePoem.grade) {
+                    section.classList.add('hidden');
+                }
+            });
+        }
+
+        // 显示所有古诗（返回目录）
+        function showAllPoems() {
+            // 显示所有古诗项
+            const allPoemItems = document.querySelectorAll('.poem-item');
+            allPoemItems.forEach(item => {
+                item.classList.remove('hidden');
+            });
+
+            // 显示所有年级模块
+            const allGradeSections = document.querySelectorAll('.grade-section');
+            allGradeSections.forEach(section => {
+                section.classList.remove('hidden');
+            });
+
+            // 隐藏详情，显示功能按钮
+            poemDetail.style.display = 'none';
+            backBtn.style.display = 'none';
+            randomBtn.style.display = 'block';
+            searchBtn.style.display = 'block';
+            currentPoemIndex = -1;
+        }
+
+        // 搜索功能（按年级归类展示结果）
+        function searchPoems() {
+            const keyword = searchInput.value.trim().toLowerCase();
+            if (!keyword) {
+                renderPoemModules(); // 空关键词重新渲染全部
+                return;
+            }
+
+            // 清空容器
+            poemContainer.innerHTML = '';
+
+            // 过滤匹配的古诗
+            const filteredPoems = allPoems.filter(poem => 
+                poem.title.toLowerCase().includes(keyword) || 
+                poem.author.toLowerCase().includes(keyword) 
+            );
+
+            // 按年级分组
+            const poemsByGrade = {};
+            filteredPoems.forEach(poem => {
+                if (!poemsByGrade[poem.grade]) {
+                    poemsByGrade[poem.grade] = [];
+                }
+                poemsByGrade[poem.grade].push(poem);
+            });
+
+            // 如果没有搜索结果
+            if (Object.keys(poemsByGrade).length === 0) {
+                const noResultSection = document.createElement('div');
+                noResultSection.className = 'grade-section';
+                const noResultTitle = document.createElement('div');
+                noResultTitle.className = 'grade-title';
+                noResultTitle.textContent = `搜索结果："${keyword}" - 未找到相关古诗`;
+                noResultSection.appendChild(noResultTitle);
+                poemContainer.appendChild(noResultSection);
+                poemDetail.style.display = 'none';
+                return;
+            }
+
+            // 创建搜索结果总标题
+            const searchHeader = document.createElement('div');
+            searchHeader.className = 'grade-section';
+            const searchHeaderTitle = document.createElement('div');
+            searchHeaderTitle.className = 'grade-title';
+            searchHeaderTitle.textContent = `搜索结果："${keyword}"（共${filteredPoems.length}首）`;
+            searchHeader.appendChild(searchHeaderTitle);
+            poemContainer.appendChild(searchHeader);
+
+            // 按年级渲染搜索结果
+            for (const grade in poemsByGrade) {
+                // 创建年级模块
+                const gradeSection = document.createElement('div');
+                gradeSection.className = 'grade-section';
+                gradeSection.dataset.grade = grade;
+
+                // 年级标题
+                const gradeTitle = document.createElement('div');
+                gradeTitle.className = 'grade-title';
+                gradeTitle.textContent = `${grade}（${poemsByGrade[grade].length}首）`;
+                gradeSection.appendChild(gradeTitle);
+
+                // 古诗列表
+                const poemList = document.createElement('div');
+                poemList.className = 'poem-list';
+
+                // 添加该年级的匹配古诗
+                poemsByGrade[grade].forEach(poem => {
+                    const poemItem = createPoemItem(poem);
+                    poemList.appendChild(poemItem);
+                });
+                gradeSection.appendChild(poemList);
+                poemContainer.appendChild(gradeSection);
+            }
+
+            // 隐藏详情
+            poemDetail.style.display = 'none';
+        }
+
+        // 随机展示一首诗
+        function showRandomPoem() {
+            const randomIndex = Math.floor(Math.random() * allPoems.length);
+            const randomPoem = allPoems[randomIndex];
+            showPoemDetail(randomPoem);
+            hideOtherPoems(randomPoem.index);
+
+            // 高亮显示随机选中的诗
+            const activeItem = document.querySelector(`.poem-item[data-index="${randomPoem.index}"]`);
+            if (activeItem) {
+                activeItem.style.backgroundColor = '#e3f2fd';
+                // 重置高亮
+                setTimeout(() => {
+                    activeItem.style.backgroundColor = '';
+                }, 2000);
+            }
+        }
+
+        // 事件监听
+        searchBtn.addEventListener('click', searchPoems);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchPoems();
+        });
+        randomBtn.addEventListener('click', showRandomPoem);
+        backBtn.addEventListener('click', showAllPoems);
+
+        // 初始化
+        initPoems();
+        renderPoemModules();
+    </script>
+</body>
+</html>

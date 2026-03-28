@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>初中常考病句类型大全</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", sans-serif;
+        }
+        /* ———— 核心修复：锚点跳转不遮挡 ———— */
+        html {
+            scroll-padding-top: 100px;
+            scroll-behavior: smooth;
+        }
+        body {
+            background-color: #f9fbff;
+            line-height: 1.7;
+            color: #2a2a2a;
+            position: relative;
+        }
+        header {
+            background: linear-gradient(135deg, #4285f4, #5b9bff);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        header h1 {
+            margin-bottom: 8px;
+            font-size: 26px;
+        }
+        header p {
+            font-size: 16px;
+            opacity: 0.95;
+        }
+        nav {
+            background: #ffffff;
+            padding: 14px 10px;
+            /* 已删除：position: sticky; 浮动固定效果去掉 */
+            z-index: 100;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        nav a {
+            color: #333;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #f1f5ff;
+            white-space: nowrap;
+        }
+        nav a:hover {
+            background-color: #4285f4;
+            color: white;
+            transform: translateY(-2px);
+        }
+        .container {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .module {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+            border-left: 6px solid #4285f4;
+        }
+        .module h2 {
+            color: #1a73e8;
+            margin-bottom: 16px;
+            font-size: 20px;
+        }
+        .module p {
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+        .example {
+            background-color: #f5f9ff;
+            padding: 14px;
+            border-radius: 8px;
+            margin: 12px 0;
+            border-left: 4px solid #9cccff;
+        }
+        .analysis {
+            color: #d93025;
+            margin: 6px 0;
+            font-weight: 500;
+        }
+        .solution {
+            color: #137333;
+            margin: 6px 0;
+            font-weight: 500;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #333;
+            color: white;
+            margin-top: 40px;
+            font-size: 14px;
+        }
+
+        /* ———— 右侧悬浮回到顶部按钮 ———— */
+        .back-to-top {
+            position: fixed;
+            bottom: 40px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background-color: #4285f4;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            text-decoration: none;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            z-index: 999;
+            opacity: 0.85;
+        }
+        .back-to-top:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body id="top">
+    <header>
+        <h1>初中常考病句类型大全</h1>
+        <p>中考必考点 | 12类病句全覆盖 | 附真题例句+分析+修改方法</p>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="#残缺">成分残缺</a></li>
+            <li><a href="#mismatch">搭配不当</a></li>
+            <li><a href="#order">语序不当</a></li>
+            <li><a href="#logic">不合逻辑</a></li>
+            <li><a href="#repeat">表意重复</a></li>
+            <li><a href="#mixed">句式杂糅</a></li>
+            <li><a href="#redundant">成分赘余</a></li>
+            <li><a href="#ambiguous">表意不明</a></li>
+            <li><a href="#relate">关联词不当</a></li>
+            <li><a href="#refer">指代不明</a></li>
+            <li><a href="#classify">分类不当</a></li>
+            <li><a href="#contradict">前后矛盾</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <!-- 1 成分残缺 -->
+        <section id="残缺" class="module">
+            <h2>一、成分残缺</h2>
+            <p><strong>定义</strong>：句子缺少主语、谓语、宾语，结构不完整。</p>
+            <p><strong>分析技巧</strong>：提取主谓宾，看是否缺少关键成分。</p>
+            <div class="example">
+                <p><strong>例句1（2024·四川中考）</strong>：通过开展校园读书活动，使同学们的阅读素养得到了有效提升。</p>
+                <p class="analysis">【分析】“通过……使……”连用，导致句子缺少主语。</p>
+                <p class="solution">【改法】删去“通过”或“使”，如：开展校园读书活动，使同学们的阅读素养得到了有效提升。</p>
+            </div>
+            <div class="example">
+                <p><strong>例句2（2023·湖北中考）</strong>：随着新能源汽车的普及，让城市空气污染物的排放量大幅减少。</p>
+                <p class="analysis">【分析】“随着……让……”连用，导致句子缺少主语。</p>
+                <p class="solution">【改法】删去“随着”或“让”，如：新能源汽车的普及，让城市空气污染物的排放量大幅减少。</p>
+            </div>
+            <div class="example">
+                <p><strong>例句3（2022·河南中考）</strong>：这篇报道列举大量事实，控诉了人类破坏自然、滥杀动物。</p>
+                <p class="analysis">【分析】“控诉了”缺少宾语中心语，应补充“的行为”。</p>
+                <p class="solution">【改法】这篇报道列举大量事实，控诉了人类破坏自然、滥杀动物的行为。</p>
+            </div>
+        </section>
+
+        <!-- 2 搭配不当 -->
+        <section id="mismatch" class="module">
+            <h2>二、搭配不当</h2>
+            <p><strong>定义</strong>：词语之间不符合语言习惯。</p>
+            <p><strong>分析技巧</strong>：检查主谓、动宾、修饰语搭配。</p>
+            <div class="example">
+                <p><strong>例句1（2023·山东中考）</strong>：这家企业研发的新产品，提高了质量和产量，深受消费者欢迎。</p>
+                <p class="analysis">【分析】“提高”与“质量”搭配不当，应为“提升质量”。</p>
+                <p class="solution">【改法】这家企业研发的新产品，提升了质量、提高了产量，深受消费者欢迎。</p>
+            </div>
+            <div class="example">
+                <p><strong>例句2（补充）</strong>：他一进教室，同学们的眼睛都集中到他身上。</p>
+                <p class="analysis">【分析】“眼睛”不能“集中”，应是“目光”。</p>
+                <p class="solution">【改法】同学们的目光都集中到他身上。</p>
+            </div>
+        </section>
+
+        <!-- 3 语序不当 -->
+        <section id="order" class="module">
+            <h2>三、语序不当</h2>
+            <p><strong>定义</strong>：词语顺序不符合逻辑。</p>
+            <p><strong>分析技巧</strong>：看递进、动作、修饰语顺序。</p>
+            <div class="example">
+                <p><strong>例句1（2023·广东中考）</strong>：他的语文成绩不仅在全校名列前茅，而且在班里也一直处于领先位置。</p>
+                <p class="analysis">【分析】递进关系颠倒，应先小范围（班里）后大范围（全校）。</p>
+                <p class="solution">【改法】他的语文成绩不仅在班里一直处于领先位置，而且在全校也名列前茅。</p>
+            </div>
+            <div class="example">
+                <p><strong>例句2（2022·浙江中考）</strong>：在班会课上，我们讨论并听取了班长关于班级文化建设的方案。</p>
+                <p class="analysis">【分析】动作顺序颠倒，应先“听取”再“讨论”。</p>
+                <p class="solution">【改法】在班会课上，我们听取并讨论了班长关于班级文化建设的方案。</p>
+            </div>
+        </section>
+
+        <!-- 4 不合逻辑 -->
+        <section id="logic" class="module">
+            <h2>四、不合逻辑</h2>
+            <p><strong>定义</strong>：句子违背事实或逻辑规律。</p>
+            <p><strong>分析技巧</strong>：看否定词、两面词、主宾搭配。</p>
+            <div class="example">
+                <p><strong>例句1（2024·湖南中考）</strong>：为了防止校园欺凌事件不再发生，学校制定了一系列安全管理措施。</p>
+                <p class="analysis">【分析】“防止”与“不再”双重否定，导致语义相反。</p>
+                <p class="solution">【改法】为了防止校园欺凌事件再次发生，学校制定了一系列安全管理措施。</p>
+            </div>
+            <div class="example">
+                <p><strong>例句2（2022·江苏中考）</strong>：能否坚持每日阅读，是提升语文核心素养的重要途径之一。</p>
+                <p class="analysis">【分析】“能否”两面与“是……途径”一面不对应，属于两面对一面。</p>
+                <p class="solution">【改法】坚持每日阅读，是提升语文核心素养的重要途径之一。</p>
+            </div>
+            <div class="example">
+                <p><strong>例句3（2021·陕西中考）</strong>：夏天的青城山，是人们避暑纳凉、放松身心的好季节。</p>
+                <p class="analysis">【分析】主宾搭配不当，“青城山”是地点，不是“季节”。</p>
+                <p class="solution">【改法】夏天的青城山，是人们避暑纳凉、放松身心的好地方。</p>
+            </div>
+        </section>
+
+        <!-- 5 表意重复 -->
+        <section id="repeat" class="module">
+            <h2>五、表意重复</h2>
+            <p><strong>定义</strong>：词语意思重复啰嗦。</p>
+            <p><strong>分析技巧</strong>：删掉重复词语。</p>
+            <div class="example">
+                <p><strong>例句1（2021·江西中考）</strong>：大约有80%左右的同学，在这次考试中取得了明显的进步。</p>
+                <p class="analysis">【分析】“大约”与“左右”语义重复，删去其一即可。</p>
+                <p class="solution">【改法】大约有80%的同学，在这次考试中取得了明显的进步。</p>
+            </div>
+            <div class="example">
+                <p><strong>例句2（补充）</strong>：我心里由衷地感谢老师。</p>
+                <p class="analysis">【分析】“心里”和“由衷”重复。</p>
+                <p class="solution">【改法】我由衷地感谢老师。</p>
+            </div>
+        </section>
+
+        <!-- 6 句式杂糅 -->
+        <section id="mixed" class="module">
+            <h2>六、句式杂糅</h2>
+            <p><strong>定义</strong>：两种句式揉在一句里。</p>
+            <p><strong>分析技巧</strong>：保留一种句式即可。</p>
+            <div class="example">
+                <p><strong>例句1（补充）</strong>：这本书的作者是鲁迅写的。</p>
+                <p class="analysis">【分析】“作者是……”和“是……写的”杂糅。</p>
+                <p class="solution">【改法】这本书的作者是鲁迅。</p>
+            </div>
+            <div class="example">
+                <p><strong>例句2（补充）</strong>：我们来到公园，观赏美丽的情景让人陶醉。</p>
+                <p class="analysis">【分析】前后两句拼接混乱。</p>
+                <p class="solution">【改法】我们来到公园，观赏美丽的情景。</p>
+            </div>
+        </section>
+
+        <!-- 7 成分赘余 -->
+        <section id="redundant" class="module">
+            <h2>七、成分赘余</h2>
+            <p><strong>定义</strong>：句子多出不必要成分。</p>
+            <div class="example">
+                <p><strong>例句1（补充）</strong>：这是当前的当务之急。</p>
+                <p class="analysis">【分析】“当前”多余。</p>
+                <p class="solution">【改法】这是当务之急。</p>
+            </div>
+            <div class="example">
+                <p><strong>例句2（补充）</strong>：他经常回忆过去的往事。</p>
+                <p class="analysis">【分析】“过去”和“往事”重复。</p>
+                <p class="solution">【改法】他经常回忆往事。</p>
+            </div>
+        </section>
+
+        <!-- 8 表意不明 -->
+        <section id="ambiguous" class="module">
+            <h2>八、表意不明（歧义）</h2>
+            <p><strong>定义</strong>：一句话有多种理解。</p>
+            <div class="example">
+                <p><strong>例句1（补充）</strong>：三个学校的领导来了。</p>
+                <p class="analysis">【分析】“三个”修饰对象不明。</p>
+                <p class="solution">【改法】学校的三位领导来了。</p>
+            </div>
+            <div class="example">
+                <p><strong>例句2（补充）</strong>：他借我一支笔。</p>
+                <p class="analysis">【分析】“借”可指借出或借入。</p>
+                <p class="solution">【改法】他借给我一支笔。</p>
+            </div>
+        </section>
+
+        <!-- 9 关联词使用不当 -->
+        <section id="relate" class="module">
+            <h2>九、关联词使用不当</h2>
+            <p><strong>定义</strong>：关联词搭配错误、位置错误、漏用。</p>
+            <div class="example">
+                <p><strong>例句1（补充）</strong>：即使明天下雨，我们就不去春游。</p>
+                <p class="analysis">【分析】“即使”配“也”，“如果”配“就”。</p>
+                <p class="solution">【改法】如果明天下雨，我们就不去春游。</p>
+            </div>
+            <div class="example">
+                <p><strong>例句2（补充）</strong>：不但他学习好，而且品德好。</p>
+                <p class="analysis">【分析】主语相同，关联词放主语后。</p>
+                <p class="solution">【改法】他不但学习好，而且品德好。</p>
+            </div>
+        </section>
+
+        <!-- 10 指代不明 -->
+        <section id="refer" class="module">
+            <h2>十、指代不明</h2>
+            <p><strong>定义</strong>：代词“他、这、其”指向不清。</p>
+            <div class="example">
+                <p><strong>例句1（补充）</strong>：小李和小张是同桌，他经常帮助他。</p>
+                <p class="analysis">【分析】两个“他”不知道指谁。</p>
+                <p class="solution">【改法】小李经常帮助小张。</p>
+            </div>
+            <div class="example">
+                <p><strong>例句2（补充）</strong>：老师告诉小明，他的本子忘带了。</p>
+                <p class="analysis">【分析】“他”指老师还是小明？</p>
+                <p class="solution">【改法】老师告诉小明：“你的本子忘带了。</p>
+            </div>
+        </section>
+
+        <!-- 11 分类不当 -->
+        <section id="classify" class="module">
+            <h2>十一、分类不当</h2>
+            <p><strong>定义</strong>：事物分类标准混乱，范围交叉。</p>
+            <div class="example">
+                <p><strong>例句1（补充）</strong>：超市里有苹果、白菜、香蕉、西瓜等水果。</p>
+                <p class="analysis">【分析】白菜不是水果。</p>
+                <p class="solution">【改法】删去“白菜”。</p>
+            </div>
+            <div class="example">
+                <p><strong>例句2（补充）</strong>：参加活动的有工人、青年、妇女和学生。</p>
+                <p class="analysis">【分析】分类标准混乱。</p>
+                <p class="solution">【改法】参加活动的有工人、农民和学生。</p>
+            </div>
+        </section>
+
+        <!-- 12 前后矛盾 -->
+        <section id="contradict" class="module">
+            <h2>十二、前后矛盾</h2>
+            <p><strong>定义</strong>：句子前后意思冲突。</p>
+            <div class="example">
+                <p><strong>例句1（补充）</strong>：广场上到处是五颜六色的红旗。</p>
+                <p class="analysis">【分析】“五颜六色”和“红”矛盾。</p>
+                <p class="solution">【改法】广场上到处是五颜六色的旗帜。</p>
+            </div>
+            <div class="example">
+                <p><strong>例句2（补充）</strong>：他是多少个死难者中幸免的一个。</p>
+                <p class="analysis">【分析】“死难者”与“幸免”矛盾。</p>
+                <p class="solution">【改法】他是多少个受难者中幸免的一个。</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- 回到顶部按钮 -->
+    <a href="#top" class="back-to-top">↑</a>
+
+    <footer>
+        <p>© 2026 初中病句学习 | 中考必备 | 完整12类</p>
+    </footer>
+</body>
+</html>
